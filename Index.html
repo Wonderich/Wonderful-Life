@@ -25,6 +25,7 @@
 <script>
   fetch('https://api.exchangerate.host/latest?base=USD&symbols=KRW')
     .then(response => response.json())
+        console.log(data)
     .then(data => {
       const rate = data.rates.KRW;
       document.getElementById('rate').innerText = `1 USD = ${rate.toFixed(2)} KRW`;
