@@ -34,8 +34,8 @@
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                const usdToEur = data.conversion_rates.KRW;
-                document.getElementById('exchange-rate').textContent = `1 USD = ${usdToEur} KRW`;
+                const usdToKrw = data.conversion_rates.KRW;
+                document.getElementById('exchange-rate').textContent = `1 USD = ${usdToKRW} KRW`;
             } catch (error) {
                 console.error('API 호출 실패:', error);
             }
