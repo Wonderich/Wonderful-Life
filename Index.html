@@ -19,37 +19,31 @@
   <h3>결과:</h3>
   <p id="result">계산 결과가 여기에 표시됩니다.</p>
 
+<head>
+    <meta charset="UTF-8">
+    <title>실시간 환율</title>
+</head>
+<body>
+    <h1>실시간 환율</h1>
+    <p id="exchange-rate">환율을 불러오는 중...</p>
 
-  <p id="rate">환율 정보를 불러오는 중...</p>
+    <script>
+        const API_KEY = '89b5af64e0d8ffbb3510c21f';
+        const url = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`;
 
-<script>
-  fetch('https://api.exchangerate.host/latest?base=USD&symbols=KRW')
-    .then(response => response.json())
-        console.log(data);
-    .then(data => {
-      const rate = data.rates.KRW;
-      document.getElementById('rate').innerText = `1 USD = ${rate.toFixed(2)} KRW`;
-    })
-    .catch(error => {
-      document.getElementById('rate').innerText = '환율 정보를 불러오지 못했어요.';
-    });
+        async function getExchangeRates() {
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const usdToEur = data.conversion_rates.EUR;
+                document.getElementById('exchange-rate').textContent = `1 USD = ${usdToEur} EUR`;
+            } catch (error) {
+                console.error('API 호출 실패:', error);
+            }
+        }
 
-    function calculate() {
-      const buy = parseFloat(document.getElementById('buyPrice').value);
-      const now = parseFloat(document.getElementById('currentPrice').value);
-      const qty = parseFloat(document.getElementById('amount').value);
+        window.onload = getExchangeRates;
+    </script>
 
-      if (isNaN(buy) || isNaN(now) || isNaN(qty)) {
-        document.getElementById('result').innerText = '모든 값을 입력해주세요.';
-        return;
-      }
-
-      const profit = (now - buy) * qty;
-      const percent = ((now - buy) / buy) * 100;
-
-      document.getElementById('result').innerText =
-        `총 수익: ${profit.toLocaleString()}원 (${percent.toFixed(2)}%)`;
-    }
-  </script>
 </body>
 </html>
