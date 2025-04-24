@@ -6,7 +6,7 @@
 </head>
 <body>
  
-  <h1>나의 자산 현황</h1>
+  <h1>나의 자산 현황입니다</h1>
 
   <h2>수익 계산기</h2>
   <form>
@@ -18,6 +18,21 @@
 
   <h3>결과:</h3>
   <p id="result">계산 결과가 여기에 표시됩니다.</p>
+
+
+  <p id="rate">환율 정보를 불러오는 중...</p>
+
+<script>
+  fetch('https://api.exchangerate.host/latest?base=USD&symbols=KRW')
+    .then(response => response.json())
+    .then(data => {
+      const rate = data.rates.KRW;
+      document.getElementById('rate').innerText = `1 USD = ${rate.toFixed(2)} KRW`;
+    })
+    .catch(error => {
+      document.getElementById('rate').innerText = '환율 정보를 불러오지 못했어요.';
+    });
+</script>
 
   <script>
     function calculate() {
