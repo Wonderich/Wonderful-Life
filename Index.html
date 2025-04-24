@@ -5,6 +5,19 @@
   <title>자산 관리 웹앱</title>
 </head>
 <body>
+  <p id="rate">환율 정보를 불러오는 중...</p>
+
+<script>
+  fetch('https://api.exchangerate.host/latest?base=USD&symbols=KRW')
+    .then(response => response.json())
+    .then(data => {
+      const rate = data.rates.KRW;
+      document.getElementById('rate').innerText = `1 USD = ${rate.toFixed(2)} KRW`;
+    })
+    .catch(error => {
+      document.getElementById('rate').innerText = '환율 정보를 불러오지 못했어요.';
+    });
+</script>
   <h1>나의 자산 현황</h1>
 
   <h2>수익 계산기</h2>
