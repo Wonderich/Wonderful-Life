@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>자산 관리 웹앱</title>
+</head>
+<body>
+  <h1>나의 자산 현황</h1>
+
+  <h2>수익 계산기</h2>
+  <form>
+    <label>매수 가격(원): <input type="number" id="buyPrice" /></label><br><br>
+    <label>현재 가격(원): <input type="number" id="currentPrice" /></label><br><br>
+    <label>보유 수량: <input type="number" id="amount" /></label><br><br>
+    <button type="button" onclick="calculate()">수익 계산</button>
+  </form>
+
+  <h3>결과:</h3>
+  <p id="result">계산 결과가 여기에 표시됩니다.</p>
+
+  <script>
+    function calculate() {
+      const buy = parseFloat(document.getElementById('buyPrice').value);
+      const now = parseFloat(document.getElementById('currentPrice').value);
+      const qty = parseFloat(document.getElementById('amount').value);
+
+      if (isNaN(buy) || isNaN(now) || isNaN(qty)) {
+        document.getElementById('result').innerText = '모든 값을 입력해주세요.';
+        return;
+      }
+
+      const profit = (now - buy) * qty;
+      const percent = ((now - buy) / buy) * 100;
+
+      document.getElementById('result').innerText =
+        `총 수익: ${profit.toLocaleString()}원 (${percent.toFixed(2)}%)`;
+    }
+  </script>
+</body>
+</html>
