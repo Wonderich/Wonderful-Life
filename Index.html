@@ -2,44 +2,149 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>자산 관리 성공하자</title>
+  <title>나만의 자산 관리 공간</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    input, button {
+      width: 100%;
+      max-width: 300px;
+      margin: 8px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 480px) {
+      h1, h2 {
+        font-size: 1.5rem;
+      }
+
+      input, button {
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
-  
 <body>
- 
-  <h1>나의 자산 현황입니다</h1>
 
-  <h2>수익 계산기</h2>
-  <form>
-    <label>매수 가격(원): <input type="number" id="buyPrice" /></label><br><br>
-    <label>매도 가격(원): <input type="number" id="currentPrice" /></label><br><br>
-    <label>보유 수량: <input type="number" id="amount" /></label><br><br>
-    <button type="button" onclick="calculate()">수익 계산</button>
-  </form>
+  <h1>💰 나의 자산 현황</h1>
 
-  <h3>결과:</h3>
-  <p id="result">계산 결과가 여기에 표시됩니다.</p>
-  
-  <h4>실시간 환율</h4>
-  <p id="exchange-rate">환율을 불러오는 중...</p>
+  <!-- 수익 계산기 -->
+  <section>
+    <h2>📈 수익 계산기</h2>
+    <form>
+      <label>매수가: <input type="number" id="buyPrice" /></label><br>
+      <label>매도가: <input type="number" id="currentPrice" /></label><br>
+      <label>수량: <input type="number" id="amount" /></label><br>
+      <button type="button" onclick="calculate()">수익 계산</button>
+    </form>
 
-    <script>
-        const API_KEY = '89b5af64e0d8ffbb3510c21f';
-        const url = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`;
+    <h3>결과:</h3>
+    <p id="result">계산 결과가 여기에 표시됩니다.</p>
+  </section>
 
-        async function getExchangeRates() {
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const usdToKrw = data.conversion_rates.KRW;
-                document.getElementById('exchange-rate').textContent = `1 USD = ${usdToKRW} KRW`;
-            } catch (error) {
-                console.error('API 호출 실패:', error);
+  <!-- 환율 차트 -->
+  <section>
+    <h2>💹 USD → KRW 환율 추이</h2>
+    <canvas id="exchangeChart"></canvas>
+  </section>
+
+  <script>
+    // 수익 계산
+    function calculate() {
+      const buyPrice = parseFloat(document.getElementById('buyPrice').value);
+      const sellPrice = parseFloat(document.getElementById('currentPrice').value);
+      const amount = parseFloat(document.getElementById('amount').value);
+
+      if (isNaN(buyPrice) || isNaN(sellPrice) || isNaN(amount)) {
+        alert("모든 값을 입력해 주세요.");
+        return;
+      }
+
+      const profit = (sellPrice - buyPrice) * amount;
+      const formattedProfit = profit.toLocaleString('ko-KR', {
+        style: 'currency',
+        currency: 'KRW'
+      });
+
+      document.getElementById('result').textContent = `총 수익: ${formattedProfit}`;
+    }
+
+    // 환율 그래프
+    const API_KEY = '89b5af64e0d8ffbb3510c21f'; // 본인 키로 교체 가능
+    const baseUrl = 'https://v6.exchangerate-api.com/v6';
+    const baseCurrency = 'USD';
+    const targetCurrency = 'KRW';
+    const correction = 5;
+
+    async function fetchExchangeRate() {
+      try {
+        const response = await fetch(`${baseUrl}/${API_KEY}/latest/${baseCurrency}`);
+        const result = await response.json();
+        const originalRate = result.conversion_rates[targetCurrency];
+        const adjustedRate = originalRate + correction;
+
+        const now = new Date();
+        const timeLabel = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        updateChart([timeLabel], [adjustedRate]);
+      } catch (error) {
+        console.error('환율 가져오기 실패:', error);
+      }
+    }
+
+    let chart;
+    function updateChart(labels, dataPoints) {
+      const ctx = document.getElementById('exchangeChart').getContext('2d');
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '환율 (보정 포함)',
+            data: dataPoints,
+            borderColor: 'blue',
+            backgroundColor: 'lightblue',
+            fill: false,
+            tension: 0.2
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: { display: true, text: '시간' }
+            },
+            y: {
+              title: { display: true, text: 'KRW' }
             }
+          }
         }
+      });
+    }
 
-        window.onload = getExchangeRates;
-    </script>
+    // 페이지 로드시 환율 호출
+    fetchExchangeRate();
+  </script>
 
 </body>
 </html>
