@@ -2,149 +2,66 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>나만의 자산 관리 공간</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자산관리 대시보드</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 0;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    input, button {
-      width: 100%;
-      max-width: 300px;
-      margin: 8px 0;
-      padding: 10px;
-      font-size: 16px;
-    }
-
-    canvas {
-      width: 100% !important;
-      height: auto !important;
-    }
-
-    form {
-      margin-bottom: 20px;
-    }
-
-    @media (max-width: 480px) {
-      h1, h2 {
-        font-size: 1.5rem;
-      }
-
-      input, button {
-        font-size: 14px;
-      }
-    }
+    body { font-family: sans-serif; margin: 0; }
+    .tab-container { display: flex; background: #f0f0f0; }
+    .tab { padding: 15px 20px; cursor: pointer; }
+    .tab:hover { background: #ddd; }
+    .active { background: #ccc; }
+    .content { display: none; padding: 20px; }
+    .show { display: block; }
+    .row { display: flex; gap: 20px; }
+    .box { border: 1px solid #aaa; padding: 10px; flex: 1; }
   </style>
 </head>
 <body>
 
-  <h1>💰 나의 자산 현황</h1>
+<div class="tab-container">
+  <div class="tab active" onclick="showTab(0)">대시보드</div>
+  <div class="tab" onclick="showTab(1)">모니터링</div>
+  <div class="tab" onclick="showTab(2)">수익률 계산</div>
+</div>
 
-  <!-- 수익 계산기 -->
-  <section>
-    <h2>📈 수익 계산기</h2>
-    <form>
-      <label>매수가: <input type="number" id="buyPrice" /></label><br>
-      <label>매도가: <input type="number" id="currentPrice" /></label><br>
-      <label>수량: <input type="number" id="amount" /></label><br>
-      <button type="button" onclick="calculate()">수익 계산</button>
-    </form>
+<div class="content show">
+  <h2>1. 대시보드</h2>
+  <div class="row">
+    <div class="box">종목 리스트</div>
+    <div class="box">GPT 요약 박스</div>
+  </div>
+</div>
 
-    <h3>결과:</h3>
-    <p id="result">계산 결과가 여기에 표시됩니다.</p>
-  </section>
+<div class="content">
+  <h2>2. 모니터링</h2>
+  <div class="box">종목별 현재 정보</div>
+  <div class="box">지수 + 미니 차트</div>
+</div>
 
-  <!-- 환율 차트 -->
-  <section>
-    <h2>💹 USD → KRW 환율 추이</h2>
-    <canvas id="exchangeChart"></canvas>
-  </section>
+<div class="content">
+  <h2>3. 수익률 계산</h2>
+  <div class="row">
+    <div class="box">보유 종목</div>
+    <div class="box">매수/매도/수익률</div>
+    <div class="box">계산 결과</div>
+  </div>
+  <div class="row">
+    <div class="box">주식 차트</div>
+    <div class="box">코인 차트</div>
+    <div class="box">리스크 차트</div>
+  </div>
+</div>
 
-  <script>
-    // 수익 계산
-    function calculate() {
-      const buyPrice = parseFloat(document.getElementById('buyPrice').value);
-      const sellPrice = parseFloat(document.getElementById('currentPrice').value);
-      const amount = parseFloat(document.getElementById('amount').value);
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const contents = document.querySelectorAll('.content');
 
-      if (isNaN(buyPrice) || isNaN(sellPrice) || isNaN(amount)) {
-        alert("모든 값을 입력해 주세요.");
-        return;
-      }
-
-      const profit = (sellPrice - buyPrice) * amount;
-      const formattedProfit = profit.toLocaleString('ko-KR', {
-        style: 'currency',
-        currency: 'KRW'
-      });
-
-      document.getElementById('result').textContent = `총 수익: ${formattedProfit}`;
-    }
-
-    // 환율 그래프
-    const API_KEY = '89b5af64e0d8ffbb3510c21f'; // 본인 키로 교체 가능
-    const baseUrl = 'https://v6.exchangerate-api.com/v6';
-    const baseCurrency = 'USD';
-    const targetCurrency = 'KRW';
-    const correction = 5;
-
-    async function fetchExchangeRate() {
-      try {
-        const response = await fetch(`${baseUrl}/${API_KEY}/latest/${baseCurrency}`);
-        const result = await response.json();
-        const originalRate = result.conversion_rates[targetCurrency];
-        const adjustedRate = originalRate + correction;
-
-        const now = new Date();
-        const timeLabel = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-        updateChart([timeLabel], [adjustedRate]);
-      } catch (error) {
-        console.error('환율 가져오기 실패:', error);
-      }
-    }
-
-    let chart;
-    function updateChart(labels, dataPoints) {
-      const ctx = document.getElementById('exchangeChart').getContext('2d');
-
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: '환율 (보정 포함)',
-            data: dataPoints,
-            borderColor: 'blue',
-            backgroundColor: 'lightblue',
-            fill: false,
-            tension: 0.2
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              title: { display: true, text: '시간' }
-            },
-            y: {
-              title: { display: true, text: 'KRW' }
-            }
-          }
-        }
-      });
-    }
-
-    // 페이지 로드시 환율 호출
-    fetchExchangeRate();
-  </script>
+  function showTab(index) {
+    tabs.forEach(t => t.classList.remove('active'));
+    contents.forEach(c => c.classList.remove('show'));
+    tabs[index].classList.add('active');
+    contents[index].classList.add('show');
+  }
+</script>
 
 </body>
 </html>
